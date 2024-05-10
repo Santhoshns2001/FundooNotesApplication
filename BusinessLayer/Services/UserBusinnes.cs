@@ -24,12 +24,22 @@ namespace BusinessLayer.Services
 
         public bool Check(string Email)
         {
-           return userRepo.Check(Email);
+            return userRepo.Check(Email);
         }
 
         public string Login(string Email,string Password)
         {
             return userRepo.LoginUser(Email, Password);
+        }
+
+        public ForgetPasswordModel ForgetPassword(string Email)
+        {
+            return userRepo.ForgetPassword(Email);
+        }
+
+       public string ResetPassword(string email, string password, string confirmPassword)
+        {
+            return userRepo.ResetPassword(email,password,confirmPassword);
         }
     }
 }

@@ -103,5 +103,45 @@ namespace RepoLayer.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
 
         }
+
+       public  ForgetPasswordModel ForgetPassword(string email)
+        {
+          UserEntity user= context.Users.ToList().Find(u=> u.Email==email);
+
+          ForgetPasswordModel forgetPassword=new ForgetPasswordModel();
+            forgetPassword.Email = user.Email;
+            forgetPassword.UserId = user.UserId;
+            forgetPassword.Token=GenerateToken(user.Email, user.UserId);
+            return forgetPassword;
+        }
+
+        public string ResetPassword(string email, string password, string confirmPassword)
+        {
+
+            
+            if (password != confirmPassword)
+            {
+                return null;
+            }
+
+               var record= context.Users.FirstOrDefault(u => u.Email == email);
+               if(record != null)
+                {
+                    record.Password=HashPassword(password);
+                    record.ChangedAt = DateTime.Now;
+                    context.SaveChanges();
+                    return "password reset succussfully";
+                }
+                else
+                {
+                    return null;
+                }
+
+          //var user=context.Users.FirstOrDefault(u=> u.Email== email);
+          //  context.Users.Remove(user);
+
+           
+            
+        }
     }
 }
