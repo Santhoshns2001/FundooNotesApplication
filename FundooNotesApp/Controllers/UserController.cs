@@ -1,5 +1,6 @@
 ﻿using BusinessLayer.Interfaces;
 using MassTransit;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ModelLayer;
@@ -37,7 +38,7 @@ namespace FundooNotesApp.Controllers
                 return BadRequest(new ResponseModel<UserEntity> { IsSuccuss=false,Message=" failed to insert",Data=response});
             }
         }
-        [Route("login")]
+        [HttpGet("login")]
         public IActionResult Login(string Email,string password)
         {
             var response = userBuss.Login( Email, password);
@@ -51,7 +52,7 @@ namespace FundooNotesApp.Controllers
             }
         }
 
-        [Route("check")]
+        [HttpGet("check")]
         public bool Check(string Email)
         {
             return userBuss.Check(Email);
@@ -59,47 +60,73 @@ namespace FundooNotesApp.Controllers
         }
 
 
-       [Route("forgetPassword")]
-        //[HttpPost("forgetPassword")]
+       //[Route("forgetPassword")]
+       [HttpGet("forgetPassword")]
         public async Task<IActionResult> ForgetPassword(string Email )
         {
-            try
-            {
+           
                 if (userBuss.Check(Email))
                 {
                     Send send = new Send();
                     ForgetPasswordModel forgetPasswordModel = userBuss.ForgetPassword(Email);
                     send.SendMail(forgetPasswordModel.Email, forgetPasswordModel.Token);
                     Uri uri = new Uri("rabbitmq://localhost/FunDooNotesEmailQueue");
+
                     var endPoint = await bus.GetSendEndpoint(uri);
                     await endPoint.Send(forgetPasswordModel);
 
 
-                    return Ok(new ResponseModel<string> { IsSuccuss = true, Message = "mail sent succussfully", Data = "succuss" });
+                    return Ok(new ResponseModel<string>() { IsSuccuss = true, Message = "mail sent succussfully", Data = "succuss" });
                 }
                 else
                 {
-                    return BadRequest(new ResponseModel<string> { IsSuccuss = false, Message = "Mail Not sent", Data =  "not succuss"});
+                    return BadRequest(new ResponseModel<string>() { IsSuccuss = false, Message = "Mail Not sent", Data =  "not succuss"});
                 }
 
-            }catch (Exception ex)
+            
+        }
+        [Authorize]  // -> it will lock this particular API  to acess this method we have to provide proper authentication(token)
+        [HttpPost]
+        [Route("resetpassword")]
+        public IActionResult ResetPassword(ResetPasswordModel resetPasswordModel)
+        {
+
+
+            try
+            {
+                if (resetPasswordModel.Password == resetPasswordModel.ConfirmPassword)
+                {
+                    string Email = User.FindFirst("Email").Value;    
+                    if (userBuss.ResetPassword(Email, resetPasswordModel))
+                    {
+                        return Ok(new ResponseModel<string> { IsSuccuss = true, Message = "password reset succussfull", Data = "password matched and succussfully changed " });
+                    }
+                    else
+                    {
+                        return BadRequest(new ResponseModel<string> { IsSuccuss = false, Message = "password reset unsuccessfull ", Data = "password unmtched please check the password " });
+                    }
+                }
+                else
+                {
+                    return BadRequest(new ResponseModel<string>() { IsSuccuss = false, Message = "password and confirm password does not match", Data = "please check the password and confirm password " });
+                }
+            } 
+            
+            catch(Exception ex)
             {
                 throw ex;
             }
-        }
-        [Route("resetpassword")]
-        public IActionResult ResetPassword(string Email,string Password,string ConfirmPassword)
-        {
-            var response = userBuss.ResetPassword(Email,Password,ConfirmPassword);
 
-            if(response!=null)
-            {
-                return Ok(new ResponseModel<string> { IsSuccuss=true, Message ="password reset succussfull",Data =response});
-            }
-            else
-            {
-                return BadRequest(new ResponseModel<string> { IsSuccuss = false,Message="password reset unsuccessfull ",Data=response});
-            }
+           // var response = userBuss.ResetPassword(Email,resetPasswordModel);
+
+            //if(response!=null)
+            //{
+            //    return Ok(new ResponseModel<string> { IsSuccuss=true, Message ="password reset succussfull",Data =response});
+            //}
+            //else
+            //{
+            //    return BadRequest(new ResponseModel<string> { IsSuccuss = false,Message="password reset unsuccessfull ",Data=response});
+            //}
 
         }
 

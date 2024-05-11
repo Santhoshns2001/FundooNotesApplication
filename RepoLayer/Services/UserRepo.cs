@@ -90,7 +90,7 @@ namespace RepoLayer.Services
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
             var claims = new[]
             {
-                new Claim("EmailId",Email),
+                new Claim("Email",Email),
                 new Claim("userId",userId.ToString())
             };
             var token = new JwtSecurityToken(_config["Jwt:Issuer"],
@@ -107,7 +107,6 @@ namespace RepoLayer.Services
        public  ForgetPasswordModel ForgetPassword(string email)
         {
           UserEntity user= context.Users.ToList().Find(u=> u.Email==email);
-
           ForgetPasswordModel forgetPassword=new ForgetPasswordModel();
             forgetPassword.Email = user.Email;
             forgetPassword.UserId = user.UserId;
@@ -115,26 +114,26 @@ namespace RepoLayer.Services
             return forgetPassword;
         }
 
-        public string ResetPassword(string email, string password, string confirmPassword)
+        public bool ResetPassword(string email, ResetPasswordModel resetPasswordModel)
         {
 
             
-            if (password != confirmPassword)
-            {
-                return null;
-            }
+            //if (resetPasswordModel.Password != resetPasswordModel.ConfirmPassword)
+            //{
+            //    return false;
+            //}
 
                var record= context.Users.FirstOrDefault(u => u.Email == email);
                if(record != null)
                 {
-                    record.Password=HashPassword(password);
+                    record.Password=HashPassword(resetPasswordModel.Password);
                     record.ChangedAt = DateTime.Now;
                     context.SaveChanges();
-                    return "password reset succussfully";
+                return true;
                 }
                 else
                 {
-                    return null;
+                    return false;
                 }
 
           //var user=context.Users.FirstOrDefault(u=> u.Email== email);

@@ -18,8 +18,8 @@ namespace ModelLayer
             Message.BodyEncoding= Encoding.UTF8;
             Message.IsBodyHtml= true;
 
-            SmtpClient smtpClient = new SmtpClient("smpt.gmail.com",587);
-            NetworkCredential credential = new NetworkCredential(FromMail, "vsws jyia keiw ighe");
+            SmtpClient smtpClient = new SmtpClient("smtp.gmail.com",587);
+            NetworkCredential credential = new NetworkCredential("n.s.santhosh116@gmail.com", "xtho vveq yjac uwap");
 
             smtpClient.EnableSsl = true;
             smtpClient.UseDefaultCredentials = false;
