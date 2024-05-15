@@ -54,7 +54,7 @@ namespace FundooNotesApp
                 x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             }).AddJwtBearer(o =>
             {
-                var Key = Encoding.UTF8.GetBytes(Configuration["JWT:Key"]);
+                var Key = Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]);
                 o.SaveToken = true;
                 o.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -62,8 +62,8 @@ namespace FundooNotesApp
                     ValidateAudience = false,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = Configuration["JWT:Issuer"],
-                    ValidAudience = Configuration["JWT:Audience"],
+                    ValidIssuer = Configuration["Jwt:Issuer"],
+                    ValidAudience = Configuration["Jwt:Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(Key)
                 };
             });
@@ -74,6 +74,9 @@ namespace FundooNotesApp
             services.AddDbContext<FundooDBContext>(c => c.UseSqlServer(Configuration["ConnectionStrings:FunDooConnections"]));
             services.AddTransient<IUserBuss, UserBusinnes>();
             services.AddTransient<IUserRepo, UserRepo>();
+
+            services.AddTransient<INotesBuss, NotesBusinnes>();
+            services.AddTransient<INotesRepo, NotesRepo>();
 
             services.AddSwaggerGen(option =>
             {
@@ -108,7 +111,10 @@ namespace FundooNotesApp
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
 
-            app.UseSwagger();
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
             app.UseAuthentication();
 
             // This middleware serves the Swagger documentation UI
@@ -117,13 +123,9 @@ namespace FundooNotesApp
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "FundooNotes API V1");
             });
 
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
+            app.UseSwagger();
 
             app.UseHttpsRedirection();
-        
 
             app.UseRouting();
 

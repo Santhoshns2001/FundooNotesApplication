@@ -142,5 +142,36 @@ namespace RepoLayer.Services
            
             
         }
+
+
+        // review questions
+        //1.
+        public ReviewTable RegisterReview(ReviewModel model)
+        {
+            ReviewTable review = new ReviewTable();
+
+            review.Username = model.Username;
+            review.Feedback = model.Feedback;
+            context.ReviewTable.Add(review);
+            context.SaveChanges();
+            return review;
+        }
+
+       // 2.
+      public ReviewTable FetchById(int reviewId)
+        {
+
+            ReviewTable reviewTable = context.ReviewTable.FirstOrDefault(u => u.reviewId == reviewId);
+
+            if (reviewTable != null)
+            {
+                return reviewTable;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
     }
 }

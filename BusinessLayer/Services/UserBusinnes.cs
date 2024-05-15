@@ -41,5 +41,16 @@ namespace BusinessLayer.Services
         {
             return userRepo.ResetPassword(email,resetPasswordModel);
         }
+
+        public ReviewTable RegisterReview(ReviewModel model)
+        {
+            return userRepo.RegisterReview(model);
+        }
+
+        public ReviewTable FetchReviewById(int reviewId)
+        {
+            return userRepo.FetchById(reviewId);
+        }
+
     }
 }

@@ -117,16 +117,40 @@ namespace FundooNotesApp.Controllers
                 throw ex;
             }
 
-           // var response = userBuss.ResetPassword(Email,resetPasswordModel);
+           
 
-            //if(response!=null)
-            //{
-            //    return Ok(new ResponseModel<string> { IsSuccuss=true, Message ="password reset succussfull",Data =response});
-            //}
-            //else
-            //{
-            //    return BadRequest(new ResponseModel<string> { IsSuccuss = false,Message="password reset unsuccessfull ",Data=response});
-            //}
+        }
+        // Review Questions 
+        [HttpPost("register")]
+        public ActionResult RegisterReview(ReviewModel model)
+        {
+            var response = userBuss.RegisterReview(model);
+
+            if (response != null)
+            {
+                return Ok(new ResponseModel<ReviewTable> { IsSuccuss = true, Message = "insertion succuss", Data = response });
+            }
+            else
+            {
+                return BadRequest(new ResponseModel<ReviewTable> { IsSuccuss = false, Message = " failed to insert", Data = response });
+            }
+        }
+
+
+        // fetch by review id
+        [HttpGet]
+        public ActionResult FetchReviewById(int reviewId)
+        {
+            var result = userBuss.FetchReviewById(reviewId);
+
+            if (result != null)
+            {
+                return Ok(new ResponseModel<ReviewTable> { IsSuccuss = true, Message = "insertion succuss", Data = result });
+            }
+            else
+            {
+                return BadRequest(new ResponseModel<string> { IsSuccuss = false, Message = " failed to insert", Data = "wroong review id is provided " });
+            }
 
         }
 
