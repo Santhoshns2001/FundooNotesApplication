@@ -72,15 +72,23 @@ namespace FundooNotesApp
 
             services.AddControllers();
             services.AddDbContext<FundooDBContext>(c => c.UseSqlServer(Configuration["ConnectionStrings:FunDooConnections"]));
+
             services.AddTransient<IUserBuss, UserBusinnes>();
             services.AddTransient<IUserRepo, UserRepo>();
 
             services.AddTransient<INotesBuss, NotesBusinnes>();
             services.AddTransient<INotesRepo, NotesRepo>();
 
+            services.AddTransient<ILabelBuss, LabelBusiness>();
+            services.AddTransient<ILabelRepo, LabelRepo>();
+
+            services.AddTransient<ICollaboratorBuss,CollaboratorBusiness>();
+            services.AddTransient<ICollaboratorRepo, CollaboratorRepo>();
+
+
             services.AddSwaggerGen(option =>
             {
-                option.SwaggerDoc("v1", new OpenApiInfo { Title = "Demo API", Version = "v1" });
+                option.SwaggerDoc("v1", new OpenApiInfo { Title = "FundooNotes API", Version = "v1" });
                 option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     In = ParameterLocation.Header,

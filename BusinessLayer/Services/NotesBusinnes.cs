@@ -1,4 +1,6 @@
 ﻿using BusinessLayer.Interfaces;
+using CloudinaryDotNet.Actions;
+using Microsoft.AspNetCore.Http;
 using ModelLayer;
 using RepoLayer.Entity;
 using RepoLayer.Interfaces;
@@ -47,6 +49,16 @@ namespace BusinessLayer.Services
        public bool SetReminder(int notesId, int userId, DateTime dateTime)
         {
             return notesRepo.SetReminder(notesId, userId, dateTime);
+        }
+
+       public  string AddImageToNotes(int userId, int notesId, string imagePath)
+        {
+           return notesRepo.AddImageToNotes(userId,notesId,imagePath);
+        }
+
+       public ImageUploadResult UploadImage(int userId, int notesId, IFormFile formFile)
+        {
+            return notesRepo.UploadImage(userId, notesId, formFile);
         }
     }
 }

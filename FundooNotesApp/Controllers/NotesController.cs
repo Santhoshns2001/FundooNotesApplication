@@ -145,9 +145,46 @@ namespace FundooNotesApp.Controllers
                 return BadRequest(new ResponseModel<string> { IsSuccuss = false, Message = " Failed to set the Reminder. Please Enter valid date and time   ", Data = "Unsucuss!!" });
             }
 
+        }
+        [Authorize]
+        [HttpPut]
+        [Route("AddImage")]
 
+        public ActionResult AddImageToNote(string ImagePath, int NotesId)
+        {
+            int UserId= int.Parse(User.FindFirst("UserId").Value);
+
+            var response=notesBuss.AddImageToNotes(UserId, NotesId, ImagePath);
+            if (response!=null)
+            {
+                return Ok(new ResponseModel<string> { IsSuccuss = true, Message = "Succussfully Image  has been Added ", Data = "succuss" });
+            }
+            else
+            {
+                return BadRequest(new ResponseModel<string> { IsSuccuss = false, Message = " Failed to Add the Image ", Data = "Unsuccuss!!" });
+            }
 
         }
+        [Authorize]
+        [HttpPut]
+        [Route("UploadImage")]
+        public ActionResult UploadImage (IFormFile formFile,int NotesId)
+        {
+            int UserId = int.Parse(User.FindFirst("UserId").Value);
+
+            var response=notesBuss.UploadImage(UserId, NotesId, formFile);
+
+            if (response != null)
+            {
+                return Ok(new ResponseModel<string> { IsSuccuss = true, Message = "Succussfully Image  has been Added ", Data = "succuss" });
+            }
+            else
+            {
+                return BadRequest(new ResponseModel<string> { IsSuccuss = false, Message = " Failed to Add the Image ", Data = "Unsuccuss!!" });
+            }
+
+        }
+       
 
 
 

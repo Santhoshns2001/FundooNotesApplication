@@ -1,4 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore.Internal;
+﻿using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.Extensions.Configuration;
 using ModelLayer;
 using RepoLayer.Context;
 using RepoLayer.Entity;
@@ -7,6 +11,7 @@ using RepoLayer.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Principal;
 using System.Text;
 
 namespace RepoLayer.Services
@@ -14,10 +19,11 @@ namespace RepoLayer.Services
     public class NotesRepo :INotesRepo
     {
         private readonly FundooDBContext context;
-
-        public NotesRepo(FundooDBContext context)
+        private readonly IConfiguration configuration;
+        public NotesRepo(FundooDBContext context, IConfiguration configuration)
         {
             this.context = context;
+           this.configuration = configuration;
         }
 
       public  NotesEntity CreateNotes(int userId, NotesModel model)
@@ -109,13 +115,13 @@ namespace RepoLayer.Services
         public bool AddingBackgroundColour(string colour, int NotesId, int UserId)
         {
 
-            var result = GetNoteById(NotesId, UserId);
-            NotesEntity notesEntity = new NotesEntity();
+            var notesEntity = GetNoteById(NotesId, UserId);
+          
 
 
-            if (result == null)
+            if (notesEntity == null)
             {
-                throw new Exception("Note not found, please Enter valid note and user id ");
+                throw new Exception("Note not found, please Enter valid note id ");
             }
 
             if (Enum.TryParse<BackgroudColour>(colour, out var chosenColour))
@@ -134,11 +140,9 @@ namespace RepoLayer.Services
 
         public bool SetReminder(int notesId, int userId, DateTime dateTime)
         {
-           var result= GetNoteById(notesId, userId);
+           var notesEntity= GetNoteById(notesId, userId);
 
-            NotesEntity notesEntity = new NotesEntity();
-
-            if(result!=null&& dateTime> DateTime.Now)
+            if(notesEntity!=null&& dateTime> DateTime.Now)
             {
                 notesEntity.Reminder = dateTime.ToString();
                 context.SaveChanges();
@@ -150,6 +154,68 @@ namespace RepoLayer.Services
             }
 
 
+        }
+
+       public string AddImageToNotes(int userId, int notesId, string filePath)
+        {
+            var notes =GetNoteById(notesId, userId);
+            if (notes != null)
+            {
+                Account account = new Account("dv7snxvoi", "563851866817452", "Vre-2kSbyW05eGeshTe5pgRZKpI");
+                Cloudinary cloudinary= new Cloudinary(account);
+                ImageUploadParams uploadParams=new ImageUploadParams()
+                {
+                    File=new FileDescription(filePath),
+                    PublicId =notes.Title
+                };
+
+                ImageUploadResult uploadResult=cloudinary.Upload(uploadParams);
+                notes.UpdatedAt = DateTime.Now;
+                notes.Image = uploadResult.Url.ToString();
+                context.SaveChanges();
+                return "Upload Succussfull";
+            }
+            else
+            {
+                    
+                throw new Exception("Notes is not present by the given id ");
+            }
+
+
+        }
+
+       public ImageUploadResult UploadImage(int userId, int notesId, IFormFile formFile)
+        {
+           var res= GetNoteById(notesId,userId);
+            try
+            {
+                if (res != null)
+                {
+                    Account account = new Account(configuration["Cloudinary:cloudName"], configuration["Cloudinary:APIKey"], configuration["Cloudinary:APISecret"]);
+                    Cloudinary cloudinary = new Cloudinary(account);
+                    var uploadParams = new ImageUploadParams()
+                    {
+                        File = new FileDescription(formFile.FileName, formFile.OpenReadStream()),
+                    };
+
+                    var uploadImages = cloudinary.Upload(uploadParams);
+                    if (uploadImages != null)
+                    {
+                        return uploadImages;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                else
+                {
+                    throw new Exception("Incorrect id given unable to find the notes");
+                }
+            }catch(Exception ex)
+            {
+                throw ex;
+            }
         }
     }
 }
