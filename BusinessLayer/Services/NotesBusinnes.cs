@@ -60,5 +60,10 @@ namespace BusinessLayer.Services
         {
             return notesRepo.UploadImage(userId, notesId, formFile);
         }
+
+      public  List<NotesEntity> FetchingNotesByTitleAndDescp(string title, string descrption)
+        {
+            return notesRepo.FetchingNotesByTitleAndDescp(title, descrption);
+        }
     }
 }

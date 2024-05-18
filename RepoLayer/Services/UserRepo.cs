@@ -173,5 +173,48 @@ namespace RepoLayer.Services
             }
         }
 
+
+
+        //
+        public object GetUserNotesCounts()
+        {
+            var result = from user in context.Users
+                         join note in context.Notes on user.UserId equals note.UserId
+                         group note by user.FirstName into userGroup
+                         select new
+                         {
+                             FirstName = userGroup.Key,
+                             NoteCount = userGroup.Count()
+                         };
+            return result.ToList();
+        }
+
+        //2) check for data existence of user using any table column, if user exist update the data else insert the data
+
+        public UserEntity FetchUserDetails(int UserId, string firstname, string lastname, string email)
+        {
+            var userEntity = (from user in context.Users where user.UserId == UserId select user).FirstOrDefault();
+
+            if (userEntity!=null)
+            {
+                userEntity.FirstName=firstname;
+                userEntity.LastName = lastname;
+                userEntity.Email = email;
+                context.SaveChanges();
+                return userEntity;
+            }
+            else
+            {
+                UserEntity user = new UserEntity();
+
+                user.FirstName = firstname;
+                user.LastName = lastname;
+                user.Email = email;
+                context.Users.Add(user);
+                context.SaveChanges();
+                return user;
+            }
+        }
+
     }
 }

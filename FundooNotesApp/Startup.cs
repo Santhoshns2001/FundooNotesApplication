@@ -68,7 +68,7 @@ namespace FundooNotesApp
                 };
             });
 
-          
+            services.AddStackExchangeRedisCache(options => { options.Configuration = Configuration["RedisCacheUrl"]; });
 
             services.AddControllers();
             services.AddDbContext<FundooDBContext>(c => c.UseSqlServer(Configuration["ConnectionStrings:FunDooConnections"]));

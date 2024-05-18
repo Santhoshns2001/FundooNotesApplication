@@ -17,5 +17,9 @@ namespace BusinessLayer.Interfaces
        public bool ResetPassword(string email, ResetPasswordModel resetPasswordModel);
         public ReviewTable RegisterReview(ReviewModel model);
         public ReviewTable FetchReviewById(int reviewId);
+
+        public object GetUserNotesCounts();
+
+        public UserEntity FetchUserDetails(int UserId, string firstname, string lastname, string email);
     }
 }

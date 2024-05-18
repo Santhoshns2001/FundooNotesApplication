@@ -217,6 +217,19 @@ namespace RepoLayer.Services
                 throw ex;
             }
         }
+
+       public  List<NotesEntity> FetchingNotesByTitleAndDescp(string title, string descrption)
+        {
+            IQueryable<NotesEntity> notesEntities = from note in context.Notes where note.Title == title && note.Description == descrption 
+                                                    select note;
+            return notesEntities.ToList();
+        }
+
+
+        
+
+
+
     }
 }
 

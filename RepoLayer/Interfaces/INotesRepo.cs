@@ -21,5 +21,6 @@ namespace RepoLayer.Interfaces
         bool SetReminder(int notesId, int userId, DateTime dateTime);
         string AddImageToNotes(int userId, int notesId, string imagePath);
         ImageUploadResult UploadImage(int userId, int notesId, IFormFile formFile);
+        List<NotesEntity> FetchingNotesByTitleAndDescp(string title, string descrption);
     }
 }

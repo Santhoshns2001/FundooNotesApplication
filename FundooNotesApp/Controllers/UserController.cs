@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ModelLayer;
+using RepoLayer.Context;
 using RepoLayer.Entity;
 using System;
 using System.Threading.Tasks;
@@ -16,11 +17,13 @@ namespace FundooNotesApp.Controllers
     {
         private readonly IUserBuss userBuss;
         private readonly IBus bus;
+        private readonly FundooDBContext context;
 
-        public UserController(IUserBuss userBuss,IBus bus)
+        public UserController(IUserBuss userBuss,IBus bus, FundooDBContext context)
         {
             this.userBuss = userBuss;
             this.bus=bus;
+            this.context = context;
         }
 
         [HttpPost ("user")]
@@ -150,6 +153,46 @@ namespace FundooNotesApp.Controllers
             else
             {
                 return BadRequest(new ResponseModel<string> { IsSuccuss = false, Message = " failed to insert", Data = "wroong review id is provided " });
+            }
+
+        }
+
+        [HttpGet]
+        [Route("GetUserNotesCount")]
+        public ActionResult GetUserNotesCounts()
+        {
+            var response=userBuss.GetUserNotesCounts();
+
+            if (response != null)
+            {
+                return Ok(new ResponseModel<object> { IsSuccuss = true, Message = "fetched count of notes of a user with username ", Data = response });
+            }
+            else
+            {
+                return BadRequest(new ResponseModel<bool> { IsSuccuss = false, Message ="Unable to fetch user notes and user name ", Data = false }); ;
+            }
+        }
+
+        [HttpGet]
+        [Route("FetchAndUpdate")]
+        public ActionResult FetchUserDetails(int UserId, string firstname, string lastname, string email)
+        {
+           var response= userBuss.FetchUserDetails(UserId, firstname, lastname, email);
+
+            try
+            {
+
+                if (response != null)
+                {
+                    return Ok(new ResponseModel<UserEntity> { IsSuccuss = true, Message = "user data fetched succussfully  ", Data = response });
+                }
+                else
+                {
+                    return BadRequest(new ResponseModel<UserEntity> { IsSuccuss = false, Message = "Unable to fetch user details", Data = response }); ;
+                }
+            }catch(Exception ex)
+            {
+                return BadRequest(new ResponseModel<UserEntity> { IsSuccuss = false, Message = ex.Message, Data = response }); ;
             }
 
         }

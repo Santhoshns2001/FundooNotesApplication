@@ -52,5 +52,14 @@ namespace BusinessLayer.Services
             return userRepo.FetchById(reviewId);
         }
 
+       public object GetUserNotesCounts()
+        {
+            return userRepo.GetUserNotesCounts();
+        }
+
+       public UserEntity FetchUserDetails(int UserId, string firstname, string lastname, string email)
+        {
+            return userRepo.FetchUserDetails( UserId,  firstname,  lastname,  email);
+        }
     }
 }

@@ -3,10 +3,16 @@ using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 using ModelLayer;
+using Newtonsoft.Json;
+using RepoLayer.Context;
 using RepoLayer.Entity;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace FundooNotesApp.Controllers
 {
@@ -15,10 +21,14 @@ namespace FundooNotesApp.Controllers
     public class NotesController : ControllerBase
     {
         private readonly INotesBuss notesBuss;
+        private readonly IDistributedCache _cache;
+        private readonly FundooDBContext context;
 
-        public NotesController(INotesBuss notesBuss)
+        public NotesController(INotesBuss notesBuss,IDistributedCache _cache, FundooDBContext context)
         {
             this.notesBuss = notesBuss;
+            this._cache = _cache;
+            this.context = context;
         }
 
 
@@ -184,9 +194,59 @@ namespace FundooNotesApp.Controllers
             }
 
         }
-       
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllNotesUsingRedisCache()
+        {
+            var cacheKey = "NotesList";
+            string serailzedNotesList;
+            var NotesList=new List<NotesEntity>();
+            var redisNotesList =await _cache.GetAsync(cacheKey);
+            if (redisNotesList != null)
+            {
+                serailzedNotesList = Encoding.UTF8.GetString(redisNotesList);
+                NotesList =JsonConvert.DeserializeObject<List<NotesEntity>>(serailzedNotesList);
+
+            }
+            else
+            {
+                NotesList = context.Notes.ToList();
+                serailzedNotesList = JsonConvert.SerializeObject(NotesList);
+                redisNotesList=Encoding.UTF8.GetBytes(serailzedNotesList);
+                var options = new DistributedCacheEntryOptions()
+                    .SetAbsoluteExpiration(DateTime.Now.AddMinutes(10))
+                    .SetSlidingExpiration(TimeSpan.FromMinutes(2));
+                await _cache.SetAsync(cacheKey,redisNotesList,options);
+
+            }
+            return Ok(NotesList);
+
+        }
 
 
+
+        /* 3) find the notes on the basis of title and description, if its a single note show single
+         data else if more than one note is found, show the list of notes
+        */
+
+        [HttpGet]
+        [Route("Fetchlistofnotes")]
+        public IActionResult FetchingNotesByTitleAndDescp(string Title,string Descrption)
+        {
+            var response = notesBuss.FetchingNotesByTitleAndDescp(Title, Descrption);
+
+            if (response != null)
+            {
+                return Ok(new ResponseModel<List<NotesEntity>> { IsSuccuss = true, Message = "Succussfully notes with given title and description is fetched  ", Data = response });
+            }
+            else
+            {
+                return BadRequest(new ResponseModel<string> { IsSuccuss = false, Message = " Failed to fetch the notes list  ", Data = "Unsuccuss!!" });
+            }
+
+
+
+        }
 
     }
 }
